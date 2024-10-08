@@ -298,66 +298,81 @@ export const GanttChart = ({
         {/* Task bars */}
         <g>
           {sortedIndexes.map((i) => {
-            const label = textField.values.get(i);
-            const startTimeValue = startField.values.get(i);
-            const endTimeValue = endField.values.get(i);
+	  const label = textField.values.get(i);
+	  const startTimeValue = startField.values.get(i);
+	  const endTimeValue = endField.values.get(i);
 
-            const startTime = dayjs(startTimeValue);
-            const endTime = dayjs(endTimeValue);
+	  const startTime = dayjs(startTimeValue);
+	  const endTime = dayjs(endTimeValue);
 
-            const pixelStartX = startTimeValue ? Math.max(scaleX(startTime.toDate()), 0) : 0;
-            const pixelEndX = endTimeValue ? Math.min(scaleX(endTime.toDate()), chartWidth) : chartWidth;
+	  const pixelStartX = startTimeValue ? Math.max(scaleX(startTime.toDate()), 0) : 0;
+	  const pixelEndX = endTimeValue ? Math.min(scaleX(endTime.toDate()), chartWidth) : chartWidth;
 
-            const taskBarWidth = Math.max(pixelEndX - pixelStartX - 2, 1);
+	  const taskBarWidth = Math.max(pixelEndX - pixelStartX - 2, 1);
 
-            const taskBarPos = {
-              x: pixelStartX + padding.left,
-              y: scaleY(label) ?? 0,
-            };
+	  const taskBarPos = {
+	    x: pixelStartX + padding.left,
+	    y: scaleY(label) ?? 0,
+	  };
 
-            const tooltipContent = (
-              <div>
-                <div className={styles.tooltip.header}>{label}</div>
-                {startTimeValue && (
-                  <div className={styles.tooltip.value}>Started at: {startField.display!(startTimeValue).text}</div>
-                )}
-                {endTimeValue && (
-                  <div className={styles.tooltip.value}>Ended at: {endField.display!(endTimeValue).text}</div>
-                )}
-                <div className={styles.tooltip.faint}>
-                  {humanizeDuration((endTimeValue || Date.now()) - startTimeValue, { largest: 2 })}
-                </div>
-                <div>
-                  {labelFields
-                    .filter((field) => field?.values.get(i) !== undefined && field?.values.get(i) !== null)
-                    .map((field) => field?.display!(field?.values.get(i)))
-                    .map(getFormattedDisplayValue)
-                    .map((label, key) => (
-                      <Badge key={key} className={styles.tooltip.badge} text={label ?? ''} color="blue" />
-                    ))}
-                </div>
-              </div>
-            );
+	  const tooltipContent = (
+	    <div>
+	      <div className={styles.tooltip.header}>{label}</div>
+	      {startTimeValue && (
+		<div className={styles.tooltip.value}>Started at: {startField.display!(startTimeValue).text}</div>
+	      )}
+	      {endTimeValue && (
+		<div className={styles.tooltip.value}>Ended at: {endField.display!(endTimeValue).text}</div>
+	      )}
+	      <div className={styles.tooltip.faint}>
+		{humanizeDuration((endTimeValue || Date.now()) - startTimeValue, { largest: 2 })}
+	      </div>
+	      <div>
+		{labelFields
+		  .filter((field) => field?.values.get(i) !== undefined && field?.values.get(i) !== null)
+		  .map((field) => field?.display!(field?.values.get(i)))
+		  .map(getFormattedDisplayValue)
+		  .map((label, key) => (
+		    <Badge key={key} className={styles.tooltip.badge} text={label ?? ''} color="blue" />
+		  ))}
+	      </div>
+	    </div>
+	  );
 
-            const fillColor = colorByField
-              ? colorByField.type === FieldType.number
-                ? colorByField.display!(colorByField.values.get(i)).color!
-                : labelColor(colorByField.values.get(i), theme, colors)
-              : 'black';
+	  const fillColor = colorByField
+	    ? colorByField.type === FieldType.number
+	      ? colorByField.display!(colorByField.values.get(i)).color!
+	      : labelColor(colorByField.values.get(i), theme, colors)
+	    : 'black';
 
-            return (
-              <GanttTask
-                key={i}
-                x={taskBarPos.x}
-                y={taskBarPos.y}
-                width={taskBarWidth}
-                height={taskBarHeight}
-                color={fillColor}
-                tooltip={tooltipContent}
-                links={textField.getLinks!({ valueRowIndex: i })}
-              />
-            );
-          })}
+	  return (
+	    <g key={i}>
+	      {/* Render the Gantt task bar */}
+	      <GanttTask
+		x={taskBarPos.x}
+		y={taskBarPos.y}
+		width={taskBarWidth}
+		height={taskBarHeight}
+		color={fillColor}
+		tooltip={tooltipContent}
+		links={textField.getLinks!({ valueRowIndex: i })}
+	      />
+
+	      {/* Add label on top of the bar */}
+	      <text
+		x={taskBarPos.x + taskBarWidth / 2}  {/* Center the text */}
+		y={taskBarPos.y - 5}  {/* Position the text slightly above the bar */}
+		fill="black"  {/* Text color */}
+		fontSize="12"  {/* Font size */}
+		textAnchor="middle"  {/* Center the text horizontally */}
+		style={{ pointerEvents: 'none' }}  {/* Prevent text from blocking mouse events */}
+	      >
+		{label}
+	      </text>
+	    </g>
+	  );
+	})}
+
         </g>
 
         {/* Zoom window */}
